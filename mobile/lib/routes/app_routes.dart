@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import '../screens/common/splash_screen.dart';
 import '../screens/common/opening_screen.dart';
 import '../screens/common/login_page.dart';
 import '../screens/common/dashboard_page.dart';
@@ -12,7 +11,6 @@ import '../screens/teacher/booking_request_page.dart';
 import '../screens/student/alerts_page.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
-  '/splash': (context) => const SplashScreen(),
   '/opening': (context) => const OpeningScreen(),
   '/login': (context) => const LoginPage(),
   '/dashboard': (context) => const DashboardPage(),
