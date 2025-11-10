@@ -38,11 +38,26 @@ class OpeningScreen extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               CustomButton(
-                text: 'Log in',
-                backgroundColor: const Color(0xFFb2f4db),
+                text: 'Log in as Teacher',
+                backgroundColor: const Color(0xFF2196F3),
                 textColor: Colors.white,
                 onPressed: () {
-                  Navigator.of(context).pushNamed('/login');
+                  Navigator.of(context).pushNamed(
+                    '/login',
+                    arguments: {'role': 'teacher'},
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomButton(
+                text: 'Log in as Student',
+                backgroundColor: const Color(0xFF4CAF50),
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    '/login',
+                    arguments: {'role': 'student'},
+                  );
                 },
               ),
             ],

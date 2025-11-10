@@ -12,7 +12,7 @@ import '../screens/student/alerts_page.dart';
 
 final Map<String, WidgetBuilder> appRoutes = {
   '/opening': (context) => const OpeningScreen(),
-  '/login': (context) => const LoginPage(),
+  '/login': (context) => const AuthScreen(),
   '/dashboard': (context) => const DashboardPage(),
   '/notifications': (context) => const NotificationsPage(),
   '/documents': (context) => const DocumentsPage(),
