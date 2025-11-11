@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './notifications_page.dart';
+import '../../widgets/event_card.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int)? onNavigateToNotifications;
@@ -11,6 +12,38 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // Sample events data
+  final List<Map<String, dynamic>> upcomingEvents = [
+    {
+      'title': 'Tech Fest 2024',
+      'date': 'Nov 20-22, 2024',
+      'time': '9:00 AM - 6:00 PM',
+      'location': 'Main Auditorium',
+      'color': const Color(0xFF7AB8F7),
+    },
+    {
+      'title': 'Guest Lecture: AI & ML',
+      'date': 'Nov 15, 2024',
+      'time': '2:00 PM - 4:00 PM',
+      'location': 'Room S201',
+      'color': const Color(0xFF9B59B6),
+    },
+    {
+      'title': 'Sports Day',
+      'date': 'Nov 25, 2024',
+      'time': '8:00 AM - 5:00 PM',
+      'location': 'Sports Ground',
+      'color': const Color(0xFFE74C3C),
+    },
+    {
+      'title': 'Cultural Night',
+      'date': 'Nov 30, 2024',
+      'time': '6:00 PM - 10:00 PM',
+      'location': 'Open Air Theatre',
+      'color': const Color(0xFFF39C12),
+    },
+  ];
+
   // Sample notifications data - in real app, this would come from a shared state/provider
   final List<Map<String, dynamic>> allNotifications = [
     {
@@ -67,12 +100,16 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final screenWidth = size.width;
+    final screenHeight = size.height;
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -85,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                     color: Color(0xFF2C3E50),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: screenHeight * 0.01),
                 Text(
                   'Welcome back!',
                   style: TextStyle(
@@ -93,40 +130,108 @@ class _HomePageState extends State<HomePage> {
                     color: Colors.grey.shade600,
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: screenHeight * 0.03),
 
-                // High Priority Notifications Section
-                _buildSectionHeader(
-                  'High Priority', 
-                  Icons.priority_high, 
-                  Colors.red,
-                  onTap: () => _navigateToNotifications(1), // Tab 1 = Priority
+                // Events Section - Horizontal Scrollable
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Upcoming Events',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C3E50),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        // TODO: Navigate to all events page
+                      },
+                      child: const Text(
+                        'View All',
+                        style: TextStyle(
+                          color: Color(0xFF7AB8F7),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
-                if (highPriorityNotifications.isEmpty)
-                  _buildEmptyState('No high priority notifications')
-                else
-                  ...highPriorityNotifications.map((notification) => 
-                    _buildCompactNotificationCard(notification)
-                  ).toList(),
                 
-                const SizedBox(height: 30),
-
-                // Interested/Liked Notifications Section
-                _buildSectionHeader(
-                  'Interested', 
-                  Icons.favorite, 
-                  Colors.pink,
-                  onTap: () => _navigateToNotifications(2), // Tab 2 = Liked
+                SizedBox(
+                  height: 240,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: upcomingEvents.length,
+                    itemBuilder: (context, index) {
+                      final event = upcomingEvents[index];
+                      return EventCard(
+                        title: event['title']!,
+                        date: event['date']!,
+                        time: event['time']!,
+                        location: event['location']!,
+                        color: event['color']!,
+                      );
+                    },
+                  ),
                 ),
-                const SizedBox(height: 12),
-                if (likedNotifications.isEmpty)
-                  _buildEmptyState('No liked notifications yet')
-                else
-                  ...likedNotifications.map((notification) => 
-                    _buildCompactNotificationCard(notification)
-                  ).toList(),
                 
+                SizedBox(height: screenHeight * 0.03),
+
+                // Notifications Section - Side by Side
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // High Priority Column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader(
+                            'Priority',
+                            Icons.priority_high,
+                            Colors.red,
+                            onTap: () => _navigateToNotifications(1),
+                          ),
+                          const SizedBox(height: 12),
+                          if (highPriorityNotifications.isEmpty)
+                            _buildEmptyState('No priority alerts')
+                          else
+                            ...highPriorityNotifications.map((notification) =>
+                                _buildCompactNotificationCard(notification, isCompact: true)
+                            ).toList(),
+                        ],
+                      ),
+                    ),
+                    
+                    const SizedBox(width: 12),
+                    
+                    // Interested Column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionHeader(
+                            'Interested',
+                            Icons.favorite,
+                            Colors.pink,
+                            onTap: () => _navigateToNotifications(2),
+                          ),
+                          const SizedBox(height: 12),
+                          if (likedNotifications.isEmpty)
+                            _buildEmptyState('No liked items')
+                          else
+                            ...likedNotifications.map((notification) =>
+                                _buildCompactNotificationCard(notification, isCompact: true)
+                            ).toList(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
                 const SizedBox(height: 20),
               ],
             ),
@@ -179,10 +284,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildEmptyState(String message) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Center(
@@ -190,14 +296,14 @@ class _HomePageState extends State<HomePage> {
           message,
           style: TextStyle(
             color: Colors.grey.shade500,
-            fontSize: 14,
+            fontSize: 12,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildCompactNotificationCard(Map<String, dynamic> notification) {
+  Widget _buildCompactNotificationCard(Map<String, dynamic> notification, {bool isCompact = false}) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -212,83 +318,58 @@ class _HomePageState extends State<HomePage> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.1),
               spreadRadius: 1,
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF7AB8F7).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                notification['priority'] == 'high' 
-                  ? Icons.notification_important 
-                  : Icons.notifications_outlined,
-                color: const Color(0xFF7AB8F7),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification['title']!,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: Color(0xFF2C3E50),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (notification['isLiked'])
-                        const Icon(Icons.favorite, color: Colors.red, size: 18),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    notification['date']!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    notification['message']!,
-                    style: TextStyle(
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    notification['title']!,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
                       fontSize: 13,
-                      color: Colors.grey.shade700,
+                      color: Color(0xFF2C3E50),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ],
+                ),
+                if (notification['isLiked'])
+                  const Icon(Icons.favorite, color: Colors.red, size: 14),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              notification['date']!,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
               ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              notification['message']!,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade700,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

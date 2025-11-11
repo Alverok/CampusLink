@@ -154,7 +154,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   Widget _buildSignInCard() {
     return Container(
-      padding: const EdgeInsets.all(30),
+      constraints: const BoxConstraints(maxHeight: 500),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
@@ -315,11 +316,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             height: 56,
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Implement sign in logic based on userRole
-                print('Logging in as: $userRole');
-                print('Email: ${emailController.text}');
-                // Navigate to dashboard
-                Navigator.of(context).pushReplacementNamed('/dashboard');
+                // Navigate to dashboard with role
+                Navigator.of(context).pushReplacementNamed(
+                  '/dashboard',
+                  arguments: {'role': userRole},
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2C3E50),
@@ -371,7 +372,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   Widget _buildSignUpCard() {
     return Container(
-      padding: const EdgeInsets.all(30),
+      constraints: const BoxConstraints(maxHeight: 550),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
