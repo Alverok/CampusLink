@@ -56,10 +56,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final screenWidth = size.width;
-    final screenHeight = size.height;
-    
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -158,7 +154,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   Widget _buildSignInCard() {
     return Container(
-      padding: const EdgeInsets.all(30),
+      constraints: const BoxConstraints(maxHeight: 500),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
@@ -375,7 +372,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   Widget _buildSignUpCard() {
     return Container(
-      padding: const EdgeInsets.all(30),
+      constraints: const BoxConstraints(maxHeight: 550),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
