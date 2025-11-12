@@ -76,10 +76,10 @@ export default function ClassroomsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-[#fef9f8] text-gray-900 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-[#8B1538] flex items-center gap-2">
+        <h1 className="text-3xl font-extrabold text-[#7A1232] flex items-center gap-2 drop-shadow-sm">
           <Building2 className="w-7 h-7" /> Classroom Management
         </h1>
         <button
@@ -96,35 +96,38 @@ export default function ClassroomsPage() {
 
       {/* Table */}
       {loading ? (
-        <p className="text-gray-500 text-center py-10">Loading classrooms...</p>
+        <p className="text-gray-600 text-center py-10">Loading classrooms...</p>
       ) : classrooms.length === 0 ? (
-        <p className="text-gray-500 text-center py-10">No classrooms found.</p>
+        <p className="text-gray-600 text-center py-10">No classrooms found.</p>
       ) : (
-        <div className="bg-white border border-[#8B1538]/20 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-[#8B1538]/30 rounded-xl shadow-md overflow-hidden">
           <table className="w-full border-collapse">
-            <thead className="bg-[#F5E6D3]/70">
+            <thead className="bg-[#F5E6D3] text-[#7A1232] font-semibold">
               <tr>
-                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Room No</th>
-                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Building</th>
-                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Capacity</th>
-                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Status</th>
-                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Actions</th>
+                <th className="text-left py-3 px-4 border-b border-[#8B1538]/20">Room No</th>
+                <th className="text-left py-3 px-4 border-b border-[#8B1538]/20">Building</th>
+                <th className="text-left py-3 px-4 border-b border-[#8B1538]/20">Capacity</th>
+                <th className="text-left py-3 px-4 border-b border-[#8B1538]/20">Status</th>
+                <th className="text-left py-3 px-4 border-b border-[#8B1538]/20">Actions</th>
               </tr>
             </thead>
             <tbody>
               {classrooms.map((room) => (
-                <tr key={room.id} className="border-b hover:bg-[#F5E6D3]/40">
-                  <td className="py-3 px-4">{room.room_no}</td>
-                  <td className="py-3 px-4">{room.building}</td>
-                  <td className="py-3 px-4">{room.capacity || "-"}</td>
+                <tr
+                  key={room.id}
+                  className="border-b border-[#8B1538]/10 hover:bg-[#F5E6D3]/40 transition"
+                >
+                  <td className="py-3 px-4 text-gray-900 font-medium">{room.room_no}</td>
+                  <td className="py-3 px-4 text-gray-800">{room.building}</td>
+                  <td className="py-3 px-4 text-gray-800">{room.capacity || "-"}</td>
                   <td className="py-3 px-4">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         room.status === "Available"
-                          ? "bg-green-100 text-green-700"
+                          ? "bg-green-100 text-green-800"
                           : room.status === "Occupied"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
                       {room.status}
@@ -137,13 +140,13 @@ export default function ClassroomsPage() {
                         setFormData(room);
                         setShowModal(true);
                       }}
-                      className="text-blue-600 hover:underline flex items-center gap-1"
+                      className="text-blue-700 hover:text-blue-900 font-medium flex items-center gap-1"
                     >
                       <Edit className="w-4 h-4" /> Edit
                     </button>
                     <button
                       onClick={() => handleDelete(room.id)}
-                      className="text-red-600 hover:underline flex items-center gap-1"
+                      className="text-red-700 hover:text-red-900 font-medium flex items-center gap-1"
                     >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>
@@ -158,34 +161,34 @@ export default function ClassroomsPage() {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
-            <h2 className="text-xl font-bold text-[#8B1538] mb-4">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl text-gray-900">
+            <h2 className="text-xl font-bold text-[#7A1232] mb-4">
               {editing ? "Edit Classroom" : "Add Classroom"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
                 placeholder="Room Number"
-                className="w-full border rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#8B1538] outline-none"
                 value={formData.room_no}
                 onChange={(e) => setFormData({ ...formData, room_no: e.target.value })}
               />
               <input
                 type="text"
                 placeholder="Building"
-                className="w-full border rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#8B1538] outline-none"
                 value={formData.building}
                 onChange={(e) => setFormData({ ...formData, building: e.target.value })}
               />
               <input
                 type="number"
                 placeholder="Capacity"
-                className="w-full border rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#8B1538] outline-none"
                 value={formData.capacity}
                 onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
               />
               <select
-                className="w-full border rounded-lg p-2"
+                className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#8B1538] outline-none"
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               >
@@ -193,11 +196,11 @@ export default function ClassroomsPage() {
                 <option>Occupied</option>
                 <option>Maintenance</option>
               </select>
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                  className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
                 >
                   Cancel
                 </button>

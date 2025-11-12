@@ -84,9 +84,9 @@ export default function DocumentsPage() {
             <tbody>
               {filteredDocs.map((doc) => (
                 <tr key={doc.id} className="border-b hover:bg-[#F5E6D3]/40">
-                  <td className="py-3 px-4">{doc.title}</td>
-                  <td className="py-3 px-4">{doc.type}</td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 text-[#2C1810]">{doc.title}</td>
+                  <td className="py-3 px-4 text-[#2C1810]">{doc.type}</td>
+                  <td className="py-3 px-4 text-[#2C1810]">
                     {new Date(doc.created_at).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-4 flex items-center gap-4 text-sm">
@@ -94,13 +94,13 @@ export default function DocumentsPage() {
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-600 hover:underline"
+                      className="flex items-center gap-1 text-blue-600 hover:underline font-medium"
                     >
                       <Eye className="w-4 h-4" /> View
                     </a>
                     <button
                       onClick={() => handleDelete(doc.id)}
-                      className="flex items-center gap-1 text-red-600 hover:underline"
+                      className="flex items-center gap-1 text-red-600 hover:underline font-medium"
                     >
                       <Trash2 className="w-4 h-4" /> Delete
                     </button>

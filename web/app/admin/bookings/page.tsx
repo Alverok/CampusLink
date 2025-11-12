@@ -94,12 +94,12 @@ export default function BookingRequestsPage() {
                   key={booking.id}
                   className="border-b hover:bg-[#F5E6D3]/40 transition"
                 >
-                  <td className="py-3 px-4">{booking.room}</td>
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 text-[#2C1810]">{booking.room}</td>
+                  <td className="py-3 px-4 text-[#2C1810]">
                     {new Date(booking.date).toLocaleDateString()}
                   </td>
-                  <td className="py-3 px-4">{booking.time_slot}</td>
-                  <td className="py-3 px-4">{booking.purpose}</td>
+                  <td className="py-3 px-4 text-[#2C1810]">{booking.time_slot}</td>
+                  <td className="py-3 px-4 text-[#2C1810]">{booking.purpose}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -120,13 +120,13 @@ export default function BookingRequestsPage() {
                           onClick={() =>
                             handleApprove(booking.id, booking.room)
                           }
-                          className="flex items-center gap-1 text-green-700 hover:underline"
+                          className="flex items-center gap-1 text-green-700 hover:underline font-medium"
                         >
                           <CheckCircle className="w-4 h-4" /> Approve
                         </button>
                         <button
-                          onClick={() => handleReject(booking.id)}
-                          className="flex items-center gap-1 text-red-700 hover:underline"
+                          onClick={() => setSelected(booking)}
+                          className="flex items-center gap-1 text-red-700 hover:underline font-medium"
                         >
                           <XCircle className="w-4 h-4" /> Reject
                         </button>

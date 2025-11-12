@@ -161,10 +161,10 @@ export default function UsersPage() {
             {filter === "Students" &&
               students.map((s) => (
                 <tr key={s.id} className="border-t hover:bg-gray-50">
-                  <td className="p-2">{s.rollno}</td>
-                  <td className="p-2">{s.name}</td>
-                  <td className="p-2">{s.branch}</td>
-                  <td className="p-2">{s.email}</td>
+                  <td className="p-2 text-[#2C1810]">{s.rollno}</td>
+                  <td className="p-2 text-[#2C1810]">{s.name}</td>
+                  <td className="p-2 text-[#2C1810]">{s.branch}</td>
+                  <td className="p-2 text-[#2C1810]">{s.email}</td>
                   <td
                     className={`p-2 text-center font-medium ${
                       s.status === "Active" ? "text-green-600" : "text-red-500"
@@ -196,10 +196,10 @@ export default function UsersPage() {
             {filter === "Teachers" &&
               teachers.map((t) => (
                 <tr key={t.id} className="border-t hover:bg-gray-50">
-                  <td className="p-2">{t.tid}</td>
-                  <td className="p-2">{t.name}</td>
-                  <td className="p-2">{t.branch}</td>
-                  <td className="p-2">{t.email}</td>
+                  <td className="p-2 text-[#2C1810]">{t.tid}</td>
+                  <td className="p-2 text-[#2C1810]">{t.name}</td>
+                  <td className="p-2 text-[#2C1810]">{t.branch}</td>
+                  <td className="p-2 text-[#2C1810]">{t.email}</td>
                   <td
                     className={`p-2 text-center font-medium ${
                       t.status === "Active" ? "text-green-600" : "text-red-500"
