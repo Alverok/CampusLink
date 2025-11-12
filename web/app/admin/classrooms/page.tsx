@@ -1,170 +1,214 @@
 "use client";
 
-import { useState } from "react";
-import { PlusCircle, Edit3, Trash2, Building2 } from "lucide-react";
-
-interface Classroom {
-  id: number;
-  roomNo: string;
-  building: string;
-  capacity: number;
-  status: "Available" | "Occupied";
-}
+import { useEffect, useState } from "react";
+import { Building2, Plus, Edit, Trash2 } from "lucide-react";
+import { supabaseBrowser } from "@/lib/supabase-browser";
 
 export default function ClassroomsPage() {
-  const [classrooms, setClassrooms] = useState<Classroom[]>([
-    { id: 1, roomNo: "A101", building: "Main Block", capacity: 40, status: "Available" },
-    { id: 2, roomNo: "A102", building: "Main Block", capacity: 60, status: "Occupied" },
-    { id: 3, roomNo: "B203", building: "CSE Block", capacity: 50, status: "Available" },
-  ]);
-
+  const supabase = supabaseBrowser;
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [newClassroom, setNewClassroom] = useState({
-    roomNo: "",
+  const [editing, setEditing] = useState<any>(null);
+
+  const [formData, setFormData] = useState({
+    room_no: "",
     building: "",
     capacity: "",
     status: "Available",
   });
 
-  const handleAdd = () => {
-    if (!newClassroom.roomNo || !newClassroom.building || !newClassroom.capacity) {
-      alert("Please fill all fields");
+  // Fetch all classrooms
+  const fetchClassrooms = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from("classrooms").select("*").order("building");
+    if (!error && data) setClassrooms(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchClassrooms();
+  }, []);
+
+  // Handle Add / Update
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    if (!formData.room_no || !formData.building) {
+      alert("Room number and building are required.");
       return;
     }
 
-    const newEntry: Classroom = {
-      id: Date.now(),
-      roomNo: newClassroom.roomNo,
-      building: newClassroom.building,
-      capacity: Number(newClassroom.capacity),
-      status: newClassroom.status as "Available" | "Occupied",
-    };
+    try {
+      if (editing) {
+        const { error } = await supabase
+          .from("classrooms")
+          .update(formData)
+          .eq("id", editing.id);
+        if (error) throw error;
+        alert("✅ Classroom updated successfully!");
+      } else {
+        const { error } = await supabase.from("classrooms").insert([formData]);
+        if (error) throw error;
+        alert("✅ Classroom added successfully!");
+      }
 
-    setClassrooms([newEntry, ...classrooms]);
-    setShowModal(false);
-    setNewClassroom({ roomNo: "", building: "", capacity: "", status: "Available" });
+      setShowModal(false);
+      setEditing(null);
+      setFormData({ room_no: "", building: "", capacity: "", status: "Available" });
+      fetchClassrooms();
+    } catch (error: any) {
+      console.error(error.message);
+      alert("❌ Failed to save classroom.");
+    }
   };
 
-  const handleDelete = (id: number) => {
-    setClassrooms(classrooms.filter((c) => c.id !== id));
+  // Delete classroom
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this classroom?")) return;
+    const { error } = await supabase.from("classrooms").delete().eq("id", id);
+    if (error) {
+      console.error(error.message);
+      alert("❌ Failed to delete classroom.");
+    } else {
+      alert("🗑️ Classroom deleted!");
+      fetchClassrooms();
+    }
   };
 
   return (
-    <div className="p-6 bg-[#fdf8f6] min-h-screen">
+    <div className="p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-[#7c183d] flex items-center gap-2">
-          <Building2 className="w-6 h-6" /> Classroom Management
+        <h1 className="text-3xl font-bold text-[#8B1538] flex items-center gap-2">
+          <Building2 className="w-7 h-7" /> Classroom Management
         </h1>
         <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#7c183d] text-white rounded-md hover:bg-[#61122e]"
+          onClick={() => {
+            setEditing(null);
+            setFormData({ room_no: "", building: "", capacity: "", status: "Available" });
+            setShowModal(true);
+          }}
+          className="bg-[#8B1538] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#A01842]"
         >
-          <PlusCircle className="w-5 h-5" /> Add Classroom
+          <Plus className="w-4 h-4" /> Add Classroom
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow p-4 overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="border p-2">Room No</th>
-              <th className="border p-2">Building</th>
-              <th className="border p-2">Capacity</th>
-              <th className="border p-2">Status</th>
-              <th className="border p-2 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {classrooms.map((c) => (
-              <tr key={c.id} className="border-t hover:bg-gray-50">
-                <td className="p-2">{c.roomNo}</td>
-                <td className="p-2">{c.building}</td>
-                <td className="p-2">{c.capacity}</td>
-                <td
-                  className={`p-2 font-medium ${
-                    c.status === "Available" ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {c.status}
-                </td>
-                <td className="p-2 text-center space-x-3">
-                  <button className="text-blue-600 hover:underline flex items-center gap-1">
-                    <Edit3 className="w-4 h-4" /> Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(c.id)}
-                    className="text-red-600 hover:underline flex items-center gap-1"
-                  >
-                    <Trash2 className="w-4 h-4" /> Delete
-                  </button>
-                </td>
+      {loading ? (
+        <p className="text-gray-500 text-center py-10">Loading classrooms...</p>
+      ) : classrooms.length === 0 ? (
+        <p className="text-gray-500 text-center py-10">No classrooms found.</p>
+      ) : (
+        <div className="bg-white border border-[#8B1538]/20 rounded-xl shadow-sm overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead className="bg-[#F5E6D3]/70">
+              <tr>
+                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Room No</th>
+                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Building</th>
+                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Capacity</th>
+                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Status</th>
+                <th className="text-left py-3 px-4 text-[#8B1538] border-b">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {classrooms.map((room) => (
+                <tr key={room.id} className="border-b hover:bg-[#F5E6D3]/40">
+                  <td className="py-3 px-4">{room.room_no}</td>
+                  <td className="py-3 px-4">{room.building}</td>
+                  <td className="py-3 px-4">{room.capacity || "-"}</td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        room.status === "Available"
+                          ? "bg-green-100 text-green-700"
+                          : room.status === "Occupied"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {room.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 flex items-center gap-3 text-sm">
+                    <button
+                      onClick={() => {
+                        setEditing(room);
+                        setFormData(room);
+                        setShowModal(true);
+                      }}
+                      className="text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      <Edit className="w-4 h-4" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(room.id)}
+                      className="text-red-600 hover:underline flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Add Classroom Modal */}
+      {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] sm:w-[400px] relative">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            >
-              ✖
-            </button>
-
-            <h2 className="text-xl font-bold mb-4 text-[#7c183d]">Add Classroom</h2>
-
-            <div className="space-y-3">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-xl">
+            <h2 className="text-xl font-bold text-[#8B1538] mb-4">
+              {editing ? "Edit Classroom" : "Add Classroom"}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
                 placeholder="Room Number"
-                value={newClassroom.roomNo}
-                onChange={(e) => setNewClassroom({ ...newClassroom, roomNo: e.target.value })}
-                className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-[#7c183d]"
+                className="w-full border rounded-lg p-2"
+                value={formData.room_no}
+                onChange={(e) => setFormData({ ...formData, room_no: e.target.value })}
               />
               <input
                 type="text"
-                placeholder="Building Name"
-                value={newClassroom.building}
-                onChange={(e) => setNewClassroom({ ...newClassroom, building: e.target.value })}
-                className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-[#7c183d]"
+                placeholder="Building"
+                className="w-full border rounded-lg p-2"
+                value={formData.building}
+                onChange={(e) => setFormData({ ...formData, building: e.target.value })}
               />
               <input
                 type="number"
                 placeholder="Capacity"
-                value={newClassroom.capacity}
-                onChange={(e) => setNewClassroom({ ...newClassroom, capacity: e.target.value })}
-                className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-[#7c183d]"
+                className="w-full border rounded-lg p-2"
+                value={formData.capacity}
+                onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
               />
               <select
-                value={newClassroom.status}
-                onChange={(e) => setNewClassroom({ ...newClassroom, status: e.target.value })}
-                className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-[#7c183d]"
+                className="w-full border rounded-lg p-2"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               >
-                <option value="Available">Available</option>
-                <option value="Occupied">Occupied</option>
+                <option>Available</option>
+                <option>Occupied</option>
+                <option>Maintenance</option>
               </select>
-
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-2">
                 <button
+                  type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border rounded-md hover:bg-gray-100"
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleAdd}
-                  className="px-4 py-2 bg-[#7c183d] text-white rounded-md hover:bg-[#61122e]"
+                  type="submit"
+                  className="px-4 py-2 bg-[#8B1538] text-white rounded-lg hover:bg-[#A01842]"
                 >
-                  Add
+                  {editing ? "Update" : "Add"}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
