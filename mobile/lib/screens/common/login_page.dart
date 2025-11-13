@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -59,6 +60,31 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     });
   }
 
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating, // This makes it float from the bottom
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,7 +137,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         ),
                         const SizedBox(width: 12),
                         const Text(
-                          'Edu Here',
+                          'CampusLink',
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -122,7 +148,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     ),
                   ),
 
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                  SizedBox(
+                    height: isSignIn
+                      ? MediaQuery.of(context).size.height * 0.15 // Taller space for the shorter Sign In card
+                      : MediaQuery.of(context).size.height * 0.06, // Shorter space for the taller Sign Up card
+                    ),
 
                   // Auth Card (Overlapping)
                   Padding(
@@ -334,9 +364,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     arguments: {'role': Provider.of<UserProvider>(context, listen: false).role},
                   );
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Login failed: ${e.toString()}')),
-                  );
+                  String errorMessage = 'Login failed. Please try again.';
+                  if (e is AuthApiException) {
+                    errorMessage = e.message; // This shows the simple Supabase message
+                  }
+                  _showErrorSnackBar(context, errorMessage);
                 } finally {
                   setState(() { _isLoading = false; });
                 }
@@ -606,9 +638,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 final branch = branchController.text.trim();
 
                 if (name.isEmpty || email.isEmpty || password.isEmpty || idNumber.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill all required fields')),
-                  );
+                  _showErrorSnackBar(context, 'Please fill all required fields');
                   setState(() { _isLoading = false; });
                   return;
                 }
@@ -628,9 +658,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     arguments: {'role': Provider.of<UserProvider>(context, listen: false).role},
                   );
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Sign up failed: ${e.toString()}')),
-                  );
+                  String errorMessage = 'Sign up failed. Please try again.';
+                  if (e is AuthApiException) {
+                    errorMessage = e.message; // This shows the simple Supabase message
+                  }
+                  _showErrorSnackBar(context, errorMessage);
                 } finally {
                   setState(() { _isLoading = false; });
                 }
