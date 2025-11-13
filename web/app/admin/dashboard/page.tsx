@@ -71,14 +71,18 @@ export default function AdminDashboard() {
       const combinedActivity = [
         ...(alertData || []).map((a: any) => ({
           title: `New alert posted: ${a.title}`,
-          time: new Date(a.created_at).toLocaleString(),
+          time: new Date(a.created_at).toLocaleDateString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                }),
           icon: Bell,
           color: "text-[#8B1538]",
           bgColor: "bg-[#F5E6D3]/50",
         })),
         ...(bookingData || []).map((b: any) => ({
           title: `Booking request: ${b.room} — ${b.purpose}`,
-          time: new Date(b.created_at).toLocaleString(),
+          time: new Date(b.created_at).toLocaleDateString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                }),
           icon: ClipboardList,
           color: "text-amber-600",
           bgColor: "bg-amber-100",
