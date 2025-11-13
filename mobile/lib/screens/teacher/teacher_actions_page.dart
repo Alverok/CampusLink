@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'post_assignment_page.dart';
 
 class TeacherActionsPage extends StatefulWidget {
   const TeacherActionsPage({Key? key}) : super(key: key);
@@ -379,35 +380,19 @@ class _TeacherActionsPageState extends State<TeacherActionsPage> {
             ),
             
             SizedBox(height: screenWidth * 0.04),
-            
-            // Create Event Card
+
+            // Post Assignments Card
             _buildActionCard(
               context: context,
-              icon: Icons.event,
-              iconColor: const Color(0xFF9B59B6),
-              title: 'Create Event',
-              description: 'Organize a new campus event or activity',
+              icon: Icons.assignment_turned_in, // Changed
+              iconColor: const Color(0xFF1ABC9C), // Changed
+              title: 'Post Assignments', // Changed
+              description: 'Upload course material or assignments', // Changed
               onTap: () {
-                // TODO: Navigate to create event
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Create event - Coming soon!')),
-                );
-              },
-            ),
-            
-            SizedBox(height: screenWidth * 0.04),
-            
-            // Post Notification Card
-            _buildActionCard(
-              context: context,
-              icon: Icons.notifications_active,
-              iconColor: const Color(0xFFE74C3C),
-              title: 'Post Notification',
-              description: 'Send an important announcement to students',
-              onTap: () {
-                // TODO: Navigate to post notification
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Post notification - Coming soon!')),
+                // Navigate to the new page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PostAssignmentPage()),
                 );
               },
             ),
