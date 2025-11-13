@@ -47,26 +47,49 @@ class _StudentAssignmentsPageState extends State<StudentAssignmentsPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
     final cardColor = Theme.of(context).cardColor;
     
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: cardColor,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Assignments',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+    // Use the same cream/dark gradient background as other pages and
+    // make the AppBar transparent; title text will be maroon to match dashboard.
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+                    const Color(0xFF1A1A1A),
+                    const Color(0xFF2A2A2A),
+                    const Color(0xFF3A3A3A),
+                  ]
+                : [
+                    const Color(0xFFFFF9F0),
+                    const Color(0xFFF5E6D3),
+                    const Color(0xFFE8D5C4),
+                  ],
           ),
         ),
-      ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+        child: Column(
+          children: [
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              title: Text(
+                'Assignments',
+                style: TextStyle(
+                  color: const Color(0xFF8B1538),
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
         future: _assignmentsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -137,8 +160,13 @@ class _StudentAssignmentsPageState extends State<StudentAssignmentsPage> {
               );
             },
           );
-        },
-      ),
-    );
-  }
-}
+        }, // end builder
+      ), // end FutureBuilder
+            ), // end Expanded
+          ], // end Column children
+        ), // end Column
+      ), // end Container
+      ), // End of Scaffold
+    ); // End of PopScope
+  } // end build
+} // end class

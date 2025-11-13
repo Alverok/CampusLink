@@ -49,6 +49,34 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  // Load user from existing session
+  Future<void> loadUserFromSession() async {
+    final user = SupabaseService.currentUser;
+    if (user != null) {
+      _userId = user.id;
+      _email = user.email ?? '';
+      _isAuthenticated = true;
+      
+      // Check if user is student or teacher
+      final student = await SupabaseService.getStudentByEmail(_email);
+      if (student != null) {
+        _role = 'student';
+        _name = student['name'];
+        _rollNumber = student['roll_no'];
+        _userBranch = student['branch'];
+      } else {
+        final teacher = await SupabaseService.getTeacherByEmail(_email);
+        if (teacher != null) {
+          _role = 'teacher';
+          _name = teacher['name'];
+          _rollNumber = teacher['tid'];
+          _userBranch = teacher['branch'];
+        }
+      }
+      notifyListeners();
+    }
+  }
+
   // Login with Supabase
   Future<void> login({
     required String email,

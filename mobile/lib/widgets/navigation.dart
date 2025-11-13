@@ -3,10 +3,10 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/common/home_page.dart';
-import '../screens/common/notifications_page.dart';
 import '../screens/common/profile_page.dart';
 import '../screens/common/classroom_finder_page.dart';
 import '../screens/teacher/teacher_actions_page.dart';
+import '../screens/teacher/teacher_alerts_page.dart';
 import '../screens/student/student_assignments_page.dart';
 import '../screens/student/alerts_page.dart';
 import '../providers/user_provider.dart';
@@ -22,26 +22,21 @@ class Navigation extends StatefulWidget {
 
 class _NavigationState extends State<Navigation> {
   int _currentIndex = 0;
-  int _notificationTabIndex = 0;
 
   /// If other pages want to programmatically switch to "notifications/alerts",
   /// call this with the desired inner tab index (if applicable).
   void _switchToNotifications(int tabIndex) {
     setState(() {
       _currentIndex = 1; // Switch to the second tab (notifications/alerts)
-      _notificationTabIndex = tabIndex;
     });
   }
 
   List<Widget> get _pages {
-    // Teacher: keep NotificationsPage (teacher-specific)
+    // Teacher: use TeacherAlertsPage instead of NotificationsPage
     if (widget.role == 'teacher') {
       return [
         HomePage(onNavigateToNotifications: _switchToNotifications),
-        NotificationsPage(
-          initialTab: _notificationTabIndex,
-          key: ValueKey(_notificationTabIndex),
-        ),
+        const TeacherAlertsPage(), // Teacher alerts view
         const TeacherActionsPage(), // Index 2 - + action
         ClassroomFinderPage(), // Index 3 - Classroom
         ProfilePage(), // Index 4 - Profile
@@ -64,14 +59,21 @@ class _NavigationState extends State<Navigation> {
     final userProvider = Provider.of<UserProvider>(context);
     final isTeacher = userProvider.isTeacher || widget.role == 'teacher';
 
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: SafeArea(
-        child: CurvedNavigationBar(
-          backgroundColor: const Color(0xFFF8F9FA),
-          color: Colors.white,
-          buttonBackgroundColor: const Color(0xFF7AB8F7),
-          height: 60,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        // If user presses back on the dashboard, do nothing
+        // This prevents going back to the login screen
+      },
+      child: Scaffold(
+        body: _pages[_currentIndex],
+        extendBody: true, // Extend body behind navigation bar
+        bottomNavigationBar: CurvedNavigationBar(
+          backgroundColor: const Color(0xFFE8D5C4), // Last color from gradient
+          color: const Color(0xFF8B1538),
+          buttonBackgroundColor: const Color(0xFFD4AF37),
+          height: 65,
           animationDuration: const Duration(milliseconds: 300),
           index: _currentIndex,
           items: isTeacher
@@ -79,37 +81,37 @@ class _NavigationState extends State<Navigation> {
                   // TEACHER: Home, Notifications, +, Classroom, Profile
                   Icon(Icons.home_outlined,
                       size: 30,
-                      color: _currentIndex == 0 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 0 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.notifications_outlined,
                       size: 30,
-                      color: _currentIndex == 1 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 1 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.add_circle_outline,
                       size: 35,
-                      color: _currentIndex == 2 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 2 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.class_outlined,
                       size: 30,
-                      color: _currentIndex == 3 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 3 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.person_outline,
                       size: 30,
-                      color: _currentIndex == 4 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 4 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                 ]
               : <Widget>[
                   // STUDENT: Home, Alerts, Assignments, Classroom, Profile
                   Icon(Icons.home_outlined,
                       size: 30,
-                      color: _currentIndex == 0 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 0 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.notifications_outlined,
                       size: 30,
-                      color: _currentIndex == 1 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 1 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.description_outlined,
                       size: 30,
-                      color: _currentIndex == 2 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 2 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.school_outlined,
                       size: 30,
-                      color: _currentIndex == 3 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 3 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                   Icon(Icons.person_outline,
                       size: 30,
-                      color: _currentIndex == 4 ? Colors.white : const Color(0xFF7AB8F7)),
+                      color: _currentIndex == 4 ? const Color(0xFF8B1538) : const Color(0xFFFFF9F0)),
                 ],
           onTap: (index) {
             setState(() {
@@ -117,7 +119,7 @@ class _NavigationState extends State<Navigation> {
             });
           },
         ),
-      ),
-    );
+      ), // End of Scaffold
+    ); // End of PopScope
   }
 }

@@ -6,14 +6,14 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
-class AlertsPage extends StatefulWidget {
-  const AlertsPage({Key? key}) : super(key: key);
+class TeacherAlertsPage extends StatefulWidget {
+  const TeacherAlertsPage({Key? key}) : super(key: key);
 
   @override
-  State<AlertsPage> createState() => _AlertsPageState();
+  State<TeacherAlertsPage> createState() => _TeacherAlertsPageState();
 }
 
-class _AlertsPageState extends State<AlertsPage> {
+class _TeacherAlertsPageState extends State<TeacherAlertsPage> {
   final supabase = Supabase.instance.client;
   List<dynamic> alerts = [];
   bool loading = true;

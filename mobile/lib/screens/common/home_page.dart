@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/supabase_service.dart'; // Import your service
-import './notifications_page.dart';
 import '../../widgets/event_card.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int)? onNavigateToNotifications;
@@ -15,11 +15,23 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Dynamic Events Future
   late Future<List<Map<String, dynamic>>> _eventsFuture;
+  late Future<List<Map<String, dynamic>>> _alertsFuture;
+  final supabase = Supabase.instance.client;
 
   @override
   void initState() {
     super.initState();
     _eventsFuture = SupabaseService.getGlobalEvents();
+    _alertsFuture = _fetchRecentAlerts();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchRecentAlerts() async {
+    final data = await supabase
+        .from('alerts')
+        .select()
+        .order('created_at', ascending: false)
+        .limit(3);
+    return List<Map<String, dynamic>>.from(data);
   }
 
   // Helper to format date strings from "2025-11-20" to "Nov 20"
@@ -105,8 +117,12 @@ class _HomePageState extends State<HomePage> {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
     final cardColor = Theme.of(context).cardColor;
     
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -131,16 +147,17 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
+                // Dashboard header - apply maroon color
                 Text(
                   'Dashboard',
                   style: TextStyle(
-                    fontSize: 36,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    color: const Color(0xFF8B1538),
+                    fontFamily: 'serif',
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.01),
+                SizedBox(height: screenHeight * 0.03),
 
                 // Events Section - DYNAMIC via Supabase
                 Row(
@@ -207,56 +224,45 @@ class _HomePageState extends State<HomePage> {
                 
                 SizedBox(height: screenHeight * 0.03),
 
-                // Notifications Section - Side by Side
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // High Priority Column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            'Priority',
-                            Icons.priority_high,
-                            Colors.red,
-                            onTap: () => _navigateToNotifications(1),
-                          ),
-                          const SizedBox(height: 12),
-                          if (highPriorityNotifications.isEmpty)
-                            _buildEmptyState('No priority alerts')
-                          else
-                            ...highPriorityNotifications.map((notification) =>
-                                _buildCompactNotificationCard(notification, isCompact: true)
-                            ).toList(),
-                        ],
+                // Recent Notifications from Alerts
+                GestureDetector(
+                  onTap: () {
+                    // Use the callback to switch to notifications tab
+                    if (widget.onNavigateToNotifications != null) {
+                      widget.onNavigateToNotifications!(1);
+                    }
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(
+                        'Notifications',
+                        Icons.notifications,
+                        const Color(0xFF8B1538),
+                        onTap: () {
+                          // Use the callback to switch to notifications tab
+                          if (widget.onNavigateToNotifications != null) {
+                            widget.onNavigateToNotifications!(1);
+                          }
+                        },
                       ),
-                    ),
-                    
-                    const SizedBox(width: 12),
-                    
-                    // Interested Column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            'Interested',
-                            Icons.favorite,
-                            Colors.pink,
-                            onTap: () => _navigateToNotifications(2),
-                          ),
-                          const SizedBox(height: 12),
-                          if (likedNotifications.isEmpty)
-                            _buildEmptyState('No liked items')
-                          else
-                            ...likedNotifications.map((notification) =>
-                                _buildCompactNotificationCard(notification, isCompact: true)
-                            ).toList(),
-                        ],
+                      const SizedBox(height: 12),
+                      FutureBuilder<List<Map<String, dynamic>>>(
+                        future: _alertsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                            return _buildEmptyState('No recent notifications');
+                          }
+                          return Column(
+                            children: snapshot.data!.map((alert) => _buildAlertCard(alert)).toList(),
+                          );
+                        },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 20),
@@ -264,23 +270,83 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
+        ), // End of SafeArea
+      ), // End of Container body
+    ), // End of Scaffold
+    ); // End of PopScope
+  }
+
+  Widget _buildAlertCard(Map<String, dynamic> alert) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: _getTypeColor(alert['type'] ?? 'general'),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.notifications, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  alert['title'] ?? 'No Title',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  alert['description'] ?? '',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _navigateToNotifications(int tabIndex) {
-    if (widget.onNavigateToNotifications != null) {
-      widget.onNavigateToNotifications!(tabIndex);
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => NotificationsPage(initialTab: tabIndex),
-        ),
-      );
+  Color _getTypeColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'urgent':
+        return Colors.red;
+      case 'important':
+        return Colors.orange;
+      case 'circular':
+        return Colors.blue;
+      default:
+        return Colors.green;
     }
   }
+
+  static const Color _kMaroon = Color(0xFF8B1538);
 
   Widget _buildSectionHeader(String title, IconData icon, Color color, {VoidCallback? onTap}) {
     return GestureDetector(
@@ -297,7 +363,8 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: color,
+                  // Use consistent maroon for section titles
+                  color: _kMaroon,
                 ),
               ),
             ],
@@ -329,78 +396,50 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
 
-  Widget _buildCompactNotificationCard(Map<String, dynamic> notification, {bool isCompact = false}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = Theme.of(context).cardColor;
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
-    
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => NotificationDetailsPage(
-              title: notification['title']!,
-              date: notification['date']!,
-              message: notification['message']!,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
+class NotificationDetailsPage extends StatelessWidget {
+  final String title;
+  final String date;
+  final String message;
+
+  const NotificationDetailsPage({
+    Key? key,
+    required this.title,
+    required this.date,
+    required this.message,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notification Details'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    notification['title']!,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: textColor,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (notification['isLiked'])
-                  const Icon(Icons.favorite, color: Colors.red, size: 14),
-              ],
-            ),
-            const SizedBox(height: 4),
             Text(
-              notification['date']!,
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+              title,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
-              notification['message']!,
+              date,
               style: TextStyle(
-                fontSize: 11,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                fontSize: 14,
+                color: Colors.grey.shade600,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),

@@ -114,7 +114,9 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     final backgroundColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
     
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -146,9 +148,9 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
                   Text(
                     'Notifications',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: textColor,
+                      color: const Color(0xFF8B1538),
                     ),
                   ),
                 ],
@@ -216,9 +218,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             ),
           ],
         ),
-      ),
-      ),
-    );
+        ), // End of SafeArea
+      ), // End of Container
+    ), // End of Scaffold
+    ); // End of PopScope
   }
 
   Widget _buildNotificationList(List<Map<String, dynamic>> notificationsList) {

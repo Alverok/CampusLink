@@ -23,8 +23,12 @@ class _ProfilePageState extends State<ProfilePage> {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
     final cardColor = Theme.of(context).cardColor;
     
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -53,9 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(
                 'Profile',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: textColor,
+                  color: const Color(0xFF8B1538),
                 ),
               ),
               const SizedBox(height: 30),
@@ -185,8 +189,9 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
         ),
-      ),
-      ),
-    );
+        ), // End of SafeArea
+      ), // End of Container
+    ), // End of Scaffold
+    ); // End of PopScope
   }
 }

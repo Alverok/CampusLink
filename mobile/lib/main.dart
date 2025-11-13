@@ -40,22 +40,98 @@ class ClassroomApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               brightness: Brightness.light,
-              fontFamily: 'Poppins',
+              // Use a single global serif-like font family throughout the app.
+              // If you add custom fonts later, update this to the font family name.
+              fontFamily: 'serif',
               primarySwatch: Colors.blue,
               scaffoldBackgroundColor: const Color(0xFFF8F9FA),
             ),
             darkTheme: ThemeData(
               brightness: Brightness.dark,
-              fontFamily: 'Poppins',
+              fontFamily: 'serif',
               primaryColor: const Color(0xFF7AB8F7),
               scaffoldBackgroundColor: const Color(0xFF121212),
               cardColor: const Color(0xFF1E1E1E),
             ),
             themeMode: themeProvider.themeMode,
-            initialRoute: '/opening',
+            home: const AuthChecker(), // Check auth status on startup
             routes: appRoutes,
           );
         },
+      ),
+    );
+  }
+}
+
+// Widget to check authentication status on app startup
+class AuthChecker extends StatefulWidget {
+  const AuthChecker({Key? key}) : super(key: key);
+
+  @override
+  State<AuthChecker> createState() => _AuthCheckerState();
+}
+
+class _AuthCheckerState extends State<AuthChecker> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final supabase = Supabase.instance.client;
+    final session = supabase.auth.currentSession;
+    
+    // Wait a brief moment for the UI to render
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    if (!mounted) return;
+    
+    if (session != null) {
+      // User is logged in, fetch their role and navigate to dashboard
+      try {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        await userProvider.loadUserFromSession();
+        
+        if (!mounted) return;
+        
+        Navigator.of(context).pushReplacementNamed(
+          '/dashboard',
+          arguments: {'role': userProvider.role},
+        );
+      } catch (e) {
+        // If error loading user data, go to login
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/opening');
+      }
+    } else {
+      // No session, go to opening screen
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed('/opening');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Show a loading screen while checking auth
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFFFFF9F0),
+              Color(0xFFF5E6D3),
+              Color(0xFFE8D5C4),
+            ],
+          ),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF8B1538),
+          ),
+        ),
       ),
     );
   }
